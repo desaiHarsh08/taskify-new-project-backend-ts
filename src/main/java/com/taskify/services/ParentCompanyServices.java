@@ -1,0 +1,28 @@
+package com.taskify.services;
+
+import com.taskify.dtos.ParentCompanyDto;
+import com.taskify.utils.PageResponse;
+
+public interface ParentCompanyServices {
+
+    ParentCompanyDto createParentCompany(ParentCompanyDto parentCompanyDto);
+
+    PageResponse<ParentCompanyDto> getAllParentCompanies(int pageNumber);
+
+    ParentCompanyDto getParentCompanyByName(String companyName);
+
+    PageResponse<ParentCompanyDto> getParentCompaniesByState(int pageNumber, String state);
+
+    PageResponse<ParentCompanyDto> getParentCompaniesByCity(int pageNumber, String city);
+
+    PageResponse<ParentCompanyDto> getParentCompaniesByPincode(int pageNumber, String pincode);
+
+    PageResponse<ParentCompanyDto> getParentCompaniesByBusinessType(int pageNumber, String businessType);
+
+    ParentCompanyDto getParentCompanyById(Long id);
+
+    ParentCompanyDto updateParentCompany(ParentCompanyDto parentCompanyDto);
+
+    boolean deleteParentCompany(Long id, Long userId);
+
+}
