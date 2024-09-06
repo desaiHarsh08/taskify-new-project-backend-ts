@@ -48,6 +48,14 @@ public class CustomerController {
                 this.customerServices.getCustomersByEmailOrCityOrState(email, city, state, pageNumber), HttpStatus.OK);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCustomer(@RequestParam("page") int pageNumber,
+            @RequestParam String customerName, @RequestParam String phone, @RequestParam String pincode, @RequestParam String personOfContact) {
+        
+        return new ResponseEntity<>(
+                this.customerServices.searchCustomers(customerName, phone, pincode, personOfContact, pageNumber), HttpStatus.OK);
+    }
+
     @GetMapping("/email/{email}")
     public ResponseEntity<?> getAllCustomers(@PathVariable String email) {
         return new ResponseEntity<>(

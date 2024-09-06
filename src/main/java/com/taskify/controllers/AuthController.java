@@ -79,13 +79,13 @@ public class AuthController {
         // Set the `email` and `refreshToken` inside the cookies
         Cookie emailCookie = new Cookie("email", authRequest.getEmail());
         emailCookie.setHttpOnly(true);
-        emailCookie.setSecure(true); // Use true if you're using HTTPS
+        // emailCookie.setSecure(true); // Use true if you're using HTTPS
         emailCookie.setPath("/");
         emailCookie.setMaxAge(30 * 24 * 60 * 60); // 30 days expiration
 
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true); // Use true if you're using HTTPS
+        // refreshTokenCookie.setSecure(true); // Use true if you're using HTTPS
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(30 * 24 * 60 * 60); // 30 days expiration
 

@@ -23,6 +23,8 @@ public interface CustomerServices {
 
     CustomerDto updateCustomer(CustomerDto CustomerDto, Long customerId);
 
+    PageResponse<CustomerDto> searchCustomers(String customerName, String phone, String pincode, String personOfContact, int pageNumber);
+
     Boolean deleteCustomer(Long customerId, Long userId);
 
 }

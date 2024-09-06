@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 @Service
 public class CustomerServicesImpl implements CustomerServices {
 
-    public static final int PAGE_SIZE = 100;
+    public static final int PAGE_SIZE = 1000;
 
     @Autowired
     private UserRepository userRepository;
@@ -55,12 +56,13 @@ public class CustomerServicesImpl implements CustomerServices {
     @Override
     public CustomerDto createCustomer(CustomerDto customer) {
         // Check for customer already exist
-        CustomerModel existingCustomer = this.customerRepository
-                .findByCustomerNameOrEmail(customer.getCustomerName().toUpperCase(), customer.getEmail().toLowerCase())
-                .orElse(null);
-        if (existingCustomer != null) {
-            return null;
-        }
+        // CustomerModel existingCustomer = this.customerRepository
+        // .findByCustomerNameOrEmail(customer.getCustomerName().toUpperCase(),
+        // customer.getEmail().toLowerCase())
+        // .orElse(null);
+        // if (existingCustomer != null) {
+        // return null;
+        // }
 
         CustomerModel customerModel = this.modelMapper.map(customer, CustomerModel.class);
 
@@ -233,6 +235,38 @@ public class CustomerServicesImpl implements CustomerServices {
         }
 
         return customerDtoList;
+    }
+
+    @Override
+    public PageResponse<CustomerDto> searchCustomers(String customerName, String phone, String pincode, String personOfContact, int pageNumber) {
+        if (pageNumber < 0) {
+            throw new IllegalArgumentException("Page should be always greater than 0.");
+        }
+        System.out.println(customerName);
+        System.out.println(phone);
+        System.out.println(pincode);
+        System.out.println(personOfContact);
+        System.out.println(pageNumber);
+
+        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE, Sort.Direction.DESC, "id");
+
+        Page<CustomerModel> pageCustomer = customerRepository.findByCustomerNamePhonePincodePersonOfContact(
+            customerName == null || customerName.trim().isEmpty() ? null : customerName.trim(),
+            phone == null || phone.trim().isEmpty() ? null : phone.trim(),
+            pincode == null || pincode.trim().isEmpty() ? null : pincode.trim(),
+            personOfContact == null || personOfContact.trim().isEmpty() ? null : personOfContact.trim(),
+            pageable
+    );
+
+    List<CustomerModel> customerModels = pageCustomer.getContent();
+
+        return new PageResponse(
+            pageNumber,
+            PAGE_SIZE,
+            pageCustomer.getTotalPages(),
+            pageCustomer.getTotalElements(),
+            this.customerModelListToDto(customerModels)
+        );
     }
 
 }

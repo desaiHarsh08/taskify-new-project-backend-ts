@@ -108,7 +108,7 @@ public class ParentCompanyServicesImpl implements ParentCompanyServices {
             throw new IllegalArgumentException("Page should always be greater than 0");
         }
 
-        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC,  "id"));
+        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "id"));
 
         Page<ParentCompanyModel> pageParentCompany = this.parentCompanyRepository.findByCity(pageable, city);
 
@@ -190,6 +190,11 @@ public class ParentCompanyServicesImpl implements ParentCompanyServices {
         this.parentCompanyRepository.save(foundParentCompany);
 
         return this.parentCompanyModelToDto(foundParentCompany);
+    }
+
+    @Override
+    public List<ParentCompanyDto> getAllParentCompaniesList() {
+        return this.parentCompanyModelListToDtoList(this.parentCompanyRepository.findAll());
     }
 
     @Override

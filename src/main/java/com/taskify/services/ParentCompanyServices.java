@@ -1,5 +1,7 @@
 package com.taskify.services;
 
+import java.util.List;
+
 import com.taskify.dtos.ParentCompanyDto;
 import com.taskify.utils.PageResponse;
 
@@ -8,6 +10,8 @@ public interface ParentCompanyServices {
     ParentCompanyDto createParentCompany(ParentCompanyDto parentCompanyDto);
 
     PageResponse<ParentCompanyDto> getAllParentCompanies(int pageNumber);
+
+    List<ParentCompanyDto> getAllParentCompaniesList();
 
     ParentCompanyDto getParentCompanyByName(String companyName);
 

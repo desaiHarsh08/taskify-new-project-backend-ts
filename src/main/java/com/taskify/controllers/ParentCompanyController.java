@@ -34,6 +34,11 @@ public class ParentCompanyController {
         return new ResponseEntity<>(this.parentCompanyServices.getAllParentCompanies(pageNumber), HttpStatus.OK);
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<?> getAllParentCompaniesList() {
+        return new ResponseEntity<>(this.parentCompanyServices.getAllParentCompaniesList(), HttpStatus.OK);
+    }
+
     @GetMapping("/company/{companyName}")
     public ResponseEntity<?> getParentCompanyByName(@PathVariable String companyName) {
         return new ResponseEntity<>(this.parentCompanyServices.getParentCompanyByName(companyName), HttpStatus.OK);

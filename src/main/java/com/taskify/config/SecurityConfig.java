@@ -53,7 +53,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequest -> authorizeRequest
                         .requestMatchers("/api/**").authenticated()
-                        // .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws/**", "/api/task-prototypes").permitAll()
                         .anyRequest().permitAll())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(this.jwtAuthenticationEntryPoint))
                 .sessionManagement(

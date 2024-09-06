@@ -1,6 +1,7 @@
 package com.taskify.services;
 
 import com.taskify.dtos.ColumnDto;
+import com.taskify.dtos.CustomerDto;
 import com.taskify.dtos.FileDto;
 import com.taskify.utils.PageResponse;
 
