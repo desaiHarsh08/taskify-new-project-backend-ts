@@ -355,7 +355,7 @@ public class TaskServicesImpl implements TaskServices {
 
     @Override
     public TaskDto updateTask(TaskDto givenTaskDto, Long userId) {
-        System.out.println("\n\ngivenTaskDto: " + givenTaskDto);
+        // System.out.println("\n\ngivenTaskDto: " + givenTaskDto);
         TaskModel foundTask = this.taskRepository.findById(givenTaskDto.getId()).orElseThrow(
                 () -> new ResourceNotFoundException("No task exist for id: " + givenTaskDto.getId()));
 
@@ -586,6 +586,8 @@ public class TaskServicesImpl implements TaskServices {
         Long newPumpTask = tPageResponseN.getTotalRecords();
         taskStats.setNewPumpTask(newPumpTask);
 
+        taskStats.setOverdueTasks(this.getOverdueTasks(1).getTotalRecords());
+
         PageResponse<TaskDto> tPageResponseS = this.getTasksByPrototypeId(1, 3L);
         Long serviceTask = tPageResponseN.getTotalRecords();
         taskStats.setServiceTask(serviceTask);
@@ -596,18 +598,53 @@ public class TaskServicesImpl implements TaskServices {
     @Override
     public MonthlyStats monthlyStats() {
         MonthlyStats monthlyStats = new MonthlyStats();
-        monthlyStats.setTasks(this.getTotalTasksByYearAndMonth(new Date().getYear(), new Date().getMonth()));
 
-        PageResponse<TaskDto> tPageResponse1 = this.getTasksByPriority(1, PriorityType.HIGH.name());
-        monthlyStats.setHighPriority(tPageResponse1.getTotalRecords());
+        LocalDate currentDate = LocalDate.now(); // Get current date
+        int year = currentDate.getYear();
+        int month = currentDate.getMonthValue();
 
-        PageResponse<TaskDto> tPageResponse2 = this.getTasksByIsClosed(1, true);
-        monthlyStats.setCompleted(tPageResponse2.getTotalRecords());
+        System.out.println("year: " + year + ", month: " + month);
 
-        PageResponse<TaskDto> tPageResponse3 = this.getTasksByIsClosed(1, false);
-        monthlyStats.setPending(tPageResponse3.getTotalRecords());
+        List<TaskModel> taskModels = this.taskRepository.findTasksByYearAndMonth(year, month);
+
+        monthlyStats.setTasks((long) taskModels.size());
+        System.out.println("monthlyStats.getTasks(): " + monthlyStats.getTasks());
+
+        List<TaskModel> highPriorityTasks = taskModels.stream()
+                .filter(t -> t.getPriorityType().equals(PriorityType.HIGH.name())).toList();
+
+        monthlyStats.setHighPriority((long) highPriorityTasks.size());
+
+        List<TaskModel> pendingTasks = taskModels.stream()
+                .filter(t -> t.isClosed() == false).toList();
+        monthlyStats.setPending((long) pendingTasks.size());
+
+
+        List<TaskModel> completedTasks = taskModels.stream()
+                .filter(t -> t.isClosed() == true).toList();
+        monthlyStats.setCompleted((long) completedTasks.size());
 
         return monthlyStats;
+    }
+
+    @Override
+    public PageResponse<TaskDto> getOverdueTasks(int pageNumber) {
+        if (pageNumber < 0) {
+            throw new IllegalArgumentException("Page should always be greater than 0.");
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "id"));
+
+        Page<TaskModel> pageTask = this.taskRepository.findTasksWithDueFunctionModelsBeforeNowAndNotClosed(pageable);
+
+        List<TaskModel> taskModels = pageTask.getContent();
+
+        return new PageResponse<>(
+                pageNumber,
+                PAGE_SIZE,
+                pageTask.getTotalPages(),
+                pageTask.getTotalElements(),
+                this.taskModelsToDtos(taskModels));
     }
 
     private String taskAbbreviation(TaskPrototypeModel taskPrototypeModel, TaskModel taskModel) {
@@ -646,9 +683,9 @@ public class TaskServicesImpl implements TaskServices {
 
         taskAbbreviation = taskTypeFirstCharacter + yearLastTwoDigits + month + taskCount;
 
-        System.out.println("taskCount: " + taskCount);
+        // System.out.println("taskCount: " + taskCount);
 
-        System.out.println("taskAbbreviation: " + taskAbbreviation);
+        // System.out.println("taskAbbreviation: " + taskAbbreviation);
 
         return taskAbbreviation;
     }

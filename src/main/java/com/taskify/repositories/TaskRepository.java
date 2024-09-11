@@ -43,4 +43,10 @@ public interface TaskRepository extends JpaRepository<TaskModel, Long> {
     @Query("SELECT t FROM TaskModel t WHERE EXTRACT(YEAR FROM t.createdDate) = :year AND EXTRACT(MONTH FROM t.createdDate) = :month ORDER BY t.createdDate DESC")
     List<TaskModel> findTasksByYearAndMonth(@Param("year") int year, @Param("month") int month);
 
+    @Query("SELECT t FROM TaskModel t " +
+           "JOIN FunctionModel f ON t.id = f.task.id " +
+           "WHERE f.dueDate < CURRENT_TIMESTAMP " +
+           "AND f.isClosed = false")
+    Page<TaskModel> findTasksWithDueFunctionModelsBeforeNowAndNotClosed(Pageable pageable);
+
 }

@@ -46,6 +46,8 @@ public interface TaskServices {
 
     TaskStats totalStats();
 
+    PageResponse<TaskDto> getOverdueTasks(int pageNumber);
+
     MonthlyStats monthlyStats();
 
 }

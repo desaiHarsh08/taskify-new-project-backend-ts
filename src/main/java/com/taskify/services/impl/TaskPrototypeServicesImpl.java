@@ -57,8 +57,8 @@ public class TaskPrototypeServicesImpl implements TaskPrototypeServices {
             return null; // Already exists
         }
 
-        System.out.println("function-prototypes: " + taskPrototypeDto.getFunctionPrototypes().size());
-        System.out.println("function-prototypes: " + taskPrototypeDto.getFunctionPrototypes());
+        // System.out.println("function-prototypes: " + taskPrototypeDto.getFunctionPrototypes().size());
+        // System.out.println("function-prototypes: " + taskPrototypeDto.getFunctionPrototypes());
 
         // Create and save the FunctionPrototypes first
         Set<FunctionPrototypeModel> functionPrototypeModels = new HashSet<>();
@@ -71,12 +71,12 @@ public class TaskPrototypeServicesImpl implements TaskPrototypeServices {
             functionPrototypeModels.add(functionPrototypeModel);
         }
 
-        System.out.println("Saving task...");
+        // System.out.println("Saving task...");
         // Create and save the TaskPrototype with its FunctionPrototypes
         TaskPrototypeModel taskPrototypeModel = this.modelMapper.map(taskPrototypeDto, TaskPrototypeModel.class);
         taskPrototypeModel.setFunctionPrototypes(functionPrototypeModels);
         TaskPrototypeModel savedTaskPrototype = this.taskPrototypeRepository.save(taskPrototypeModel);
-        System.out.println("Saved task-prototype: " + savedTaskPrototype + " \n");
+        // System.out.println("Saved task-prototype: " + savedTaskPrototype + " \n");
 
         return this.taskPrototypeModelToDto(savedTaskPrototype);
     }
@@ -120,7 +120,7 @@ public class TaskPrototypeServicesImpl implements TaskPrototypeServices {
 
         List<TaskPrototypeModel> taskPrototypesList = pageTaskPrototype.getContent();
 
-        System.out.println(taskPrototypesList);
+        // System.out.println(taskPrototypesList);
 
         return new PageResponse<>(
                 pageNumber,
@@ -136,7 +136,7 @@ public class TaskPrototypeServicesImpl implements TaskPrototypeServices {
         TaskPrototypeModel foundTaskPrototype = this.taskPrototypeRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("No task_prototype exist for id:" + id));
 
-        System.out.println("foundTaskPrototype: " + foundTaskPrototype);
+        // System.out.println("foundTaskPrototype: " + foundTaskPrototype);
 
         return this.taskPrototypeModelToDto(foundTaskPrototype);
     }
@@ -215,7 +215,7 @@ public class TaskPrototypeServicesImpl implements TaskPrototypeServices {
 
 
     private TaskPrototypeDto taskPrototypeModelToDto(TaskPrototypeModel taskPrototypeModel) {
-        System.out.println("in model -> dto, taskPrototypeModel: " + taskPrototypeModel);
+        // System.out.println("in model -> dto, taskPrototypeModel: " + taskPrototypeModel);
         // Return, if task_prototype is null
         if (taskPrototypeModel == null) {
             return null;
@@ -232,7 +232,7 @@ public class TaskPrototypeServicesImpl implements TaskPrototypeServices {
                     .add(this.functionPrototypeServices.getFunctionPrototypeById(functionPrototypeModel.getId()));
         }
         taskPrototypeDto.setFunctionPrototypes(functionPrototypeDtos);
-        System.out.println("in model -> dto, taskPrototypeDto: " + taskPrototypeDto);
+        // System.out.println("in model -> dto, taskPrototypeDto: " + taskPrototypeDto);
         return taskPrototypeDto;
     }
 

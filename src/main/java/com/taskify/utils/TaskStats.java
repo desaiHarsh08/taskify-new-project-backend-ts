@@ -14,4 +14,5 @@ public class TaskStats {
     private Long tasks;
     private Long newPumpTask;
     private Long serviceTask;
+    private Long overdueTasks;
 }

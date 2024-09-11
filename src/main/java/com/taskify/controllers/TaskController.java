@@ -31,7 +31,7 @@ public class TaskController {
 
     @PostMapping("")
     public ResponseEntity<?> createTask(@RequestBody TaskDto taskDto) {
-        System.out.println("TaskDto: " + taskDto);
+        // System.out.println("TaskDto: " + taskDto);
         TaskDto createdTaskDto = this.taskServices.createTask(taskDto);
 
         if (createdTaskDto != null) {
@@ -88,6 +88,12 @@ public class TaskController {
     public ResponseEntity<PageResponse<TaskDto>> getTasksByAssignedUser(@RequestParam(name = "page") int pageNumber,
             @RequestParam(name = "assignedTo") Long assignedByUserId) {
         return new ResponseEntity<>(this.taskServices.getTasksByAssignedUser(pageNumber, assignedByUserId),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/overdue")
+    public ResponseEntity<PageResponse<TaskDto>> getOverdueTasks(@RequestParam(name = "page") int pageNumber) {
+        return new ResponseEntity<>(this.taskServices.getOverdueTasks(pageNumber),
                 HttpStatus.OK);
     }
 
