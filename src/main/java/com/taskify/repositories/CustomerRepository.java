@@ -36,27 +36,13 @@ public interface CustomerRepository extends JpaRepository<CustomerModel, Long> {
     List<CustomerModel> findByEmailAndCityAndState(String email, String city, String state);
 
     @Query("SELECT c FROM CustomerModel c WHERE " +
-            "(:email IS NULL OR LOWER(c.email) = LOWER(:email)) AND " +
-            "(:city IS NULL OR LOWER(c.city) = LOWER(:city)) AND " +
-            "(:state IS NULL OR LOWER( c.state) = LOWER(:state))")
+            "(:email IS NULL OR :email = '' OR LOWER(c.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
+            "(:city IS NULL OR :city = '' OR LOWER(c.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
+            "(:state IS NULL OR :state = '' OR LOWER(c.state) LIKE LOWER(CONCAT('%', :state, '%')))")
     Page<CustomerModel> findByEmailCityOrState(
             @Param("email") String email,
             @Param("city") String city,
             @Param("state") String state, Pageable pageable);
-
-    // @Query("SELECT c FROM CustomerModel c WHERE " +
-    // "(:customerName IS NULL OR TRIM(:customerName) = '' OR LOWER(c.customerName)
-    // = LOWER(:customerName)) AND " +
-    // "(:phone IS NULL OR TRIM(:phone) = '' OR c.phone = :phone) AND " +
-    // "(:pincode IS NULL OR TRIM(:pincode) = '' OR c.pincode = :pincode) AND " +
-    // "(:personOfContact IS NULL OR TRIM(:personOfContact) = '' OR
-    // LOWER(c.personOfContact) = LOWER(:personOfContact))")
-    // Page<CustomerModel> findByCustomerNamePhonePincodePersonOfContact(
-    // @Param("customerName") String customerName,
-    // @Param("phone") String phone,
-    // @Param("pincode") String pincode,
-    // @Param("personOfContact") String personOfContact,
-    // Pageable pageable);
 
     @Query("SELECT c FROM CustomerModel c WHERE " +
             "(:customerName IS NULL OR LOWER(c.customerName) = LOWER(:customerName)) AND " +

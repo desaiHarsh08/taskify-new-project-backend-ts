@@ -29,4 +29,7 @@ public interface ParentCompanyServices {
 
     boolean deleteParentCompany(Long id, Long userId);
 
+    PageResponse<ParentCompanyDto> searchParentCompanies(String companyName, String city, String state,
+            String pincode, int pageNumber);
+
 }

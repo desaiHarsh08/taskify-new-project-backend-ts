@@ -68,6 +68,17 @@ public class ParentCompanyController {
                 HttpStatus.OK);
     }
 
+    @GetMapping("/filters")
+    public ResponseEntity<?> searchParentCompanies(@RequestParam("page") int pageNumber,
+            @RequestParam String pincode,
+            @RequestParam String city,
+            @RequestParam String state,
+            @RequestParam String companyName
+        ) {
+        return new ResponseEntity<>(this.parentCompanyServices.searchParentCompanies(companyName, city, state, pincode, pageNumber),
+                HttpStatus.OK);
+    }
+
     @GetMapping("/business-type")
     public ResponseEntity<?> getParentCompanyByBusinessType(@RequestParam("page") int pageNumber,
             @RequestParam String businessType) {

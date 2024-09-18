@@ -2,6 +2,7 @@ package com.taskify.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,7 +175,7 @@ public class ParentCompanyServicesImpl implements ParentCompanyServices {
     @Override
     public ParentCompanyDto updateParentCompany(ParentCompanyDto parentCompanyDto) {
         ParentCompanyModel foundParentCompany = this.parentCompanyRepository
-                .findByCompanyName(parentCompanyDto.getCompanyName()).orElseThrow(
+                .findById(parentCompanyDto.getId()).orElseThrow(
                         () -> new ResourceNotFoundException(
                                 "No parent_company exist for company_name: " + parentCompanyDto.getCompanyName()));
 
@@ -234,4 +235,38 @@ public class ParentCompanyServicesImpl implements ParentCompanyServices {
 
         return parentCompanyDtos;
     }
+
+    @Override
+    public PageResponse<ParentCompanyDto> searchParentCompanies(String companyName, String city, String state,
+            String pincode, int pageNumber) {
+        if (pageNumber < 0) {
+            throw new IllegalArgumentException("Page number should be greater than 0.");
+        }
+
+        System.out.println(companyName);
+        System.out.println(city);
+        System.out.println(state);
+        System.out.println(pincode);
+        System.out.println(pageNumber);
+
+        // Pageable configuration with sorting by "id" and descending order
+        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE, Sort.Direction.DESC, "id");
+
+        // Query the repository with null checks and trimmed values
+        Page<ParentCompanyModel> pageParentCompanies = parentCompanyRepository.findByCompanyNameCityStatePincode(
+                companyName == null || companyName.trim().isEmpty() ? null : companyName.trim(),
+                city == null || city.trim().isEmpty() ? null : city.trim(),
+                state == null || state.trim().isEmpty() ? null : state.trim(),
+                pincode == null || pincode.trim().isEmpty() ? null : pincode.trim(),
+                pageable);
+
+        // Create PageResponse with pagination data
+        return new PageResponse<>(
+                pageNumber,
+                PAGE_SIZE, // Page number starts from 0, so increment by 1
+                pageParentCompanies.getTotalPages(),
+                pageParentCompanies.getTotalElements(),
+                this.parentCompanyModelListToDtoList(pageParentCompanies.getContent()));
+    }
+
 }

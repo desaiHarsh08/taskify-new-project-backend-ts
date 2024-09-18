@@ -206,6 +206,10 @@ public class CustomerServicesImpl implements CustomerServices {
         }
         Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE);
 
+        System.out.println(email);
+        System.out.println(city);
+        System.out.println(state);
+
         // Fetch the customers using the repository
         Page<CustomerModel> pageCustomer = this.customerRepository.findByEmailCityOrState(email, city, state, pageable);
 
