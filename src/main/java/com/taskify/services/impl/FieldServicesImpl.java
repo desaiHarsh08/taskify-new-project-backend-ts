@@ -86,6 +86,7 @@ public class FieldServicesImpl implements FieldServices {
 
         // Create the field
         fieldModel = this.fieldRepository.save(fieldModel);
+        System.out.println(fieldModel);
 
         // Create the column
         for (ColumnDto columnDto : field.getColumns()) {

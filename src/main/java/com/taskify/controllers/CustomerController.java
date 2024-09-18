@@ -82,6 +82,7 @@ public class CustomerController {
 
     @PutMapping("/{customerId}")
     public ResponseEntity<?> updateCustomer(@PathVariable Long customerId, @RequestBody CustomerDto customerDto) {
+        System.out.println("customerDto: " + customerDto);
         if (!customerId.equals(customerDto.getId())) {
             throw new IllegalArgumentException("Invalid customer id...");
         }

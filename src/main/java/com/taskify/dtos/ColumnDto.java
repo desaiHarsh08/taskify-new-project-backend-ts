@@ -2,6 +2,7 @@ package com.taskify.dtos;
 
 import lombok.*;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class ColumnDto {
     private String textValue;
 
     private Boolean booleanValue = false;
+
+    private Date dateValue;
 
     private List<String> fileDirectoryPaths = new ArrayList<>();
 

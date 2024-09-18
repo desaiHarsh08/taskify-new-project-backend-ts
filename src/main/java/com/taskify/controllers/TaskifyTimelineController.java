@@ -44,6 +44,15 @@ public class TaskifyTimelineController {
         return new ResponseEntity<>(taskifyTimelineServices.getAllTaskifyTimelines(pageNumber), HttpStatus.OK);
     }
 
+    @GetMapping("/filters")
+    public ResponseEntity<PageResponse<TaskifyTimelineDto>> getAllTaskifyTimelinesByMonthAndYear(
+            @RequestParam(name = "page") int pageNumber,
+            @RequestParam(name = "month") int month,
+            @RequestParam(name = "year") int year) {
+        return new ResponseEntity<>(taskifyTimelineServices.getTaskifyTimelinesByMonthAndYear(pageNumber, month, year),
+                HttpStatus.OK);
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<PageResponse<TaskifyTimelineDto>> getUserHistory(@RequestParam(name = "page") int pageNumber,
             @PathVariable Long userId) {
@@ -98,7 +107,7 @@ public class TaskifyTimelineController {
 
         LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         return new ResponseEntity<>(
-            taskifyTimelineServices.getTaskifyTimelinesByAtDate(pageNumber, localDate), HttpStatus.OK);
+                taskifyTimelineServices.getTaskifyTimelinesByAtDate(pageNumber, localDate), HttpStatus.OK);
     }
 
     @GetMapping("/task/{taskId}")

@@ -75,6 +75,9 @@ public class CustomerServicesImpl implements CustomerServices {
         }
         customerModel.setCustomerName(customerModel.getCustomerName().toUpperCase());
 
+        customerModel.setBirthDate(customer.getBirthDate());
+        customerModel.setAnniversary(customer.getAnniversary());
+
         CustomerModel savedCustomerModel = this.customerRepository.save(customerModel);
 
         return this.customerModelToDto(savedCustomerModel);
@@ -136,7 +139,7 @@ public class CustomerServicesImpl implements CustomerServices {
 
     @Override
     public CustomerDto updateCustomer(CustomerDto customerDto, Long customerId) {
-        System.out.println("customerDto: " + customerDto);
+        System.out.println("\nResidenceAddress: " + customerDto.getResidenceAddress());
         CustomerModel foundCustomer = this.customerRepository.findById(customerId).orElse(null);
         if (foundCustomer == null) {
             throw new ResourceNotFoundException("No customer exist with id:" + customerId);
@@ -147,7 +150,10 @@ public class CustomerServicesImpl implements CustomerServices {
         foundCustomer.setCity(customerDto.getCity());
         foundCustomer.setAddress(customerDto.getAddress());
         foundCustomer.setPincode(customerDto.getPincode());
-
+        foundCustomer.setBirthDate(customerDto.getBirthDate());
+        foundCustomer.setAnniversary(customerDto.getAnniversary());
+        foundCustomer.setResidenceAddress(customerDto.getResidenceAddress());
+        
         CustomerModel savedCustomer = this.customerRepository.save(foundCustomer);
 
         return this.customerModelToDto(savedCustomer);

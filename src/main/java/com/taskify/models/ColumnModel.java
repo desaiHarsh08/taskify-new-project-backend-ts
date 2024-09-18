@@ -1,5 +1,7 @@
 package com.taskify.models;
 
+import java.sql.Date;
+
 import com.taskify.constants.ModelConstants;
 import com.taskify.models.prototypes.ColumnPrototypeModel;
 import jakarta.persistence.*;
@@ -34,6 +36,8 @@ public class ColumnModel {
     private String textValue;
 
     private boolean booleanValue;
+
+    private Date dateValue;
 
     private String fileDirectoryPath;
 

@@ -21,6 +21,8 @@ public interface TaskifyTimelineServices {
 
     PageResponse<TaskifyTimelineDto> getTaskifyTimelinesByAtDate(int pageNumber, LocalDate date);
 
+    PageResponse<TaskifyTimelineDto> getTaskifyTimelinesByMonthAndYear(int pageNumber, int month, int year);
+
     PageResponse<TaskifyTimelineDto> getTaskifyTimelinesByTaskAbbreviation(int pageNumber, String taskAbbreviation);
 
     PageResponse<TaskifyTimelineDto> getTaskifyTimelinesByFunctionName(int pageNumber, String functionName);

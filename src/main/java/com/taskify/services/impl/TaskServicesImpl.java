@@ -68,6 +68,7 @@ public class TaskServicesImpl implements TaskServices {
 
     @Override
     public TaskDto createTask(TaskDto taskDto) {
+        System.out.println("assigned to userid: " + taskDto.getAssignedToUserId());
         TaskModel taskModel = this.modelMapper.map(taskDto, TaskModel.class);
         taskModel.setCreatedDate(LocalDateTime.now());
         taskModel.setClosedByUser(null);
@@ -93,7 +94,7 @@ public class TaskServicesImpl implements TaskServices {
         taskModel.setCreatedByUser(foundCreatedByUser);
 
         // Check for the assigned user
-        UserModel foundAssignedUser = this.userRepository.findById(taskDto.getCreatedByUserId()).orElseThrow(
+        UserModel foundAssignedUser = this.userRepository.findById(taskDto.getAssignedToUserId()).orElseThrow(
                 () -> new IllegalArgumentException("No user exist for id: " + taskDto.getAssignedToUserId()));
         taskModel.setAssignedToUser(foundAssignedUser);
 

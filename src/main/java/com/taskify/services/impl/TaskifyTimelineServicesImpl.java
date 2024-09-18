@@ -24,7 +24,7 @@ import java.util.List;
 @Service
 public class TaskifyTimelineServicesImpl implements TaskifyTimelineServices {
 
-    private static final int PAGE_SIZE = 25;
+    private static final int PAGE_SIZE = 500;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -150,6 +150,26 @@ public class TaskifyTimelineServicesImpl implements TaskifyTimelineServices {
 
         Page<TaskifyTimelineModel> pageTaskifyTimeline = this.taskifyTimelineRepository.findByActionType(pageable,
                 actionType);
+
+        List<TaskifyTimelineModel> taskifyTimelineModels = pageTaskifyTimeline.getContent();
+
+        return new PageResponse<>(
+                pageNumber,
+                PAGE_SIZE,
+                pageTaskifyTimeline.getTotalPages(),
+                pageTaskifyTimeline.getTotalElements(),
+                this.taskifyTimelineModelsToDtos(taskifyTimelineModels));
+    }
+
+    @Override
+    public PageResponse<TaskifyTimelineDto> getTaskifyTimelinesByMonthAndYear(int pageNumber, int month, int year) {
+        if (pageNumber < 0) {
+            throw new ResourceNotFoundException("Page should always be greater than 0.");
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "id"));
+        
+        Page<TaskifyTimelineModel> pageTaskifyTimeline = this.taskifyTimelineRepository.findByMonthAndYear(pageable, month, year);
 
         List<TaskifyTimelineModel> taskifyTimelineModels = pageTaskifyTimeline.getContent();
 

@@ -81,10 +81,15 @@ public class ColumnServicesImpl implements ColumnServices {
 
         if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.NUMBER.name())) {
             columnModel.setNumberValue(column.getNumberValue());
-        } else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.STRING.name())) {
+        } 
+        else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.STRING.name())) {
             columnModel.setTextValue(column.getTextValue());
-        } else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.BOOLEAN.name())) {
+        } 
+        else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.BOOLEAN.name())) {
             columnModel.setBooleanValue(column.getBooleanValue());
+        } 
+        else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.DATE.name())) {
+            columnModel.setDateValue(column.getDateValue());
         }
 
         // Save the column
@@ -144,7 +149,6 @@ public class ColumnServicesImpl implements ColumnServices {
 
             // Save the file to the defined directory
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,6 +230,7 @@ public class ColumnServicesImpl implements ColumnServices {
 
     @Override
     public ColumnDto updateColumn(ColumnDto givenColumn) {
+        System.out.println("column: " + givenColumn);
         ColumnModel foundColumn = this.columnRepository.findById(givenColumn.getId()).orElseThrow(
                 () -> new ResourceNotFoundException("No column exist for id: " + givenColumn.getId()));
 
@@ -238,13 +243,20 @@ public class ColumnServicesImpl implements ColumnServices {
                 () -> new IllegalArgumentException("No field exist for id: " + givenColumn.getFieldId()));
 
         // Update the changes
-        if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.NUMBER.name())) {
-            foundColumn.setNumberValue(givenColumn.getNumberValue());
-        } else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.STRING.name())) {
-            foundColumn.setTextValue(givenColumn.getTextValue());
-        } else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.BOOLEAN.name())) {
-            foundColumn.setBooleanValue(givenColumn.getBooleanValue());
-        }
+        // if
+        // (foundColumnPrototypeModel.getColumnType().equals(ColumnType.NUMBER.name()))
+        // {
+        foundColumn.setNumberValue(givenColumn.getNumberValue());
+        // } else if
+        // (foundColumnPrototypeModel.getColumnType().equals(ColumnType.STRING.name()))
+        // {
+        foundColumn.setTextValue(givenColumn.getTextValue());
+        foundColumn.setDateValue(givenColumn.getDateValue());
+        // } else if
+        // (foundColumnPrototypeModel.getColumnType().equals(ColumnType.BOOLEAN.name()))
+        // {
+        foundColumn.setBooleanValue(givenColumn.getBooleanValue());
+        // }
 
         foundField.setLastEdited(LocalDateTime.now());
 

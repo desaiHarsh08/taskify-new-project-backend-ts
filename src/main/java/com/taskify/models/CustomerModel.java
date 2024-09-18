@@ -1,6 +1,6 @@
 package com.taskify.models;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import com.taskify.constants.ModelConstants;
 import jakarta.persistence.*;
@@ -34,10 +34,10 @@ public class CustomerModel {
     private String state;
 
     @Column(nullable = true)
-    private Date birthDate;
+    private LocalDateTime birthDate;
 
     @Column(nullable = true)
-    private Date anniversary;
+    private LocalDateTime anniversary;
 
     @Column(nullable = false)
     private String address;
