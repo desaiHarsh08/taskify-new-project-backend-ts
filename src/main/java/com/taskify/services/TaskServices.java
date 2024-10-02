@@ -5,8 +5,11 @@ import com.taskify.utils.MonthlyStats;
 import com.taskify.utils.PageResponse;
 import com.taskify.utils.TaskStats;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+
+import org.springframework.data.domain.Page;
 
 public interface TaskServices {
 
@@ -49,5 +52,7 @@ public interface TaskServices {
     PageResponse<TaskDto> getOverdueTasks(int pageNumber);
 
     MonthlyStats monthlyStats();
+
+    PageResponse<TaskDto> getTaskByAbbreviationOrCreatedDate(int pageNumber, String taskAbbreviation, LocalDate date);
 
 }

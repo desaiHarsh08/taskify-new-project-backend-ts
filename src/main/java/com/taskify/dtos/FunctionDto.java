@@ -37,4 +37,8 @@ public class FunctionDto {
 
     List<FieldDto> fields = new ArrayList<>();
 
+    private String remarks;
+
+    private List<String> fileDirectoryPath = new ArrayList<>();
+
 }

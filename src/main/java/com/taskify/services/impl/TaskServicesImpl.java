@@ -68,7 +68,6 @@ public class TaskServicesImpl implements TaskServices {
 
     @Override
     public TaskDto createTask(TaskDto taskDto) {
-        System.out.println("assigned to userid: " + taskDto.getAssignedToUserId());
         TaskModel taskModel = this.modelMapper.map(taskDto, TaskModel.class);
         taskModel.setCreatedDate(LocalDateTime.now());
         taskModel.setClosedByUser(null);
@@ -76,10 +75,10 @@ public class TaskServicesImpl implements TaskServices {
         taskModel.setClosedDate(null);
 
         // Check for the customer
-        CustomerModel foundCustomer = this.customerRepository.findById(taskDto.getCustomerId()).orElseThrow(
-                () -> new IllegalArgumentException("No customer exist for id: " + taskDto.getCustomerId()));
+        CustomerModel customer = new CustomerModel();
+        customer.setId(taskDto.getCustomerId());
 
-        taskModel.setCustomer(foundCustomer);
+        taskModel.setCustomer(customer);
 
         // Retrieve the task_prototype
         TaskPrototypeModel foundTaskPrototype = this.taskPrototypeRepository.findById(taskDto.getTaskPrototypeId())
@@ -89,9 +88,9 @@ public class TaskServicesImpl implements TaskServices {
         taskModel.setTaskPrototype(foundTaskPrototype);
 
         // Check for the created user
-        UserModel foundCreatedByUser = this.userRepository.findById(taskDto.getCreatedByUserId()).orElseThrow(
-                () -> new IllegalArgumentException("No user exist for id: " + taskDto.getCreatedByUserId()));
-        taskModel.setCreatedByUser(foundCreatedByUser);
+        UserModel createdByUser = new UserModel();
+        createdByUser.setId(taskDto.getCreatedByUserId());
+        taskModel.setCreatedByUser(createdByUser);
 
         // Check for the assigned user
         UserModel foundAssignedUser = this.userRepository.findById(taskDto.getAssignedToUserId()).orElseThrow(
@@ -113,7 +112,7 @@ public class TaskServicesImpl implements TaskServices {
         // Log the action
         TaskifyTimelineModel taskifyTimelineModel = new TaskifyTimelineModel(
                 null,
-                foundCreatedByUser,
+                createdByUser,
                 ResourceType.TASK.name(),
                 ActionType.CREATE.name(),
                 taskModel.getCreatedDate(),
@@ -123,16 +122,16 @@ public class TaskServicesImpl implements TaskServices {
                 null);
         this.taskifyTimelineRepository.save(taskifyTimelineModel);
 
-        // TODO: Notify the user
+        // Notify the user
         String subject = "Task Assignment Notification from Taskify Software";
-        String body = generateCreateTaskEmail(taskModel, taskModel.getAssignedToUser());
+        String body = generateCreateTaskEmail(taskModel, taskModel.getAssignedToUser().getName());
         this.emailServices.sendSimpleMessage(taskModel.getAssignedToUser().getEmail(), subject, body);
 
         return this.taskModelToDto(taskModel);
     }
 
-    private String generateCreateTaskEmail(TaskModel taskModel, UserModel userModel) {
-        String body = "\nDear " + userModel.getName() + ",\n\n" +
+    private String generateCreateTaskEmail(TaskModel taskModel, String assignedUserName) {
+        String body = "\nDear " + assignedUserName + ",\n\n" +
                 "We hope this message finds you well. This is to inform you that you have been assigned a task via Taskify Software. The details of the task are as follows:\n\n"
                 +
                 "Task Type: " + taskModel.getTaskPrototype().getTaskType() + "\n" +
@@ -434,6 +433,28 @@ public class TaskServicesImpl implements TaskServices {
     }
 
     @Override
+    public PageResponse<TaskDto> getTaskByAbbreviationOrCreatedDate(int pageNumber, String taskAbbreviation,
+            LocalDate date) {
+        if (pageNumber < 0) {
+            throw new IllegalArgumentException("Page should always be greater than 0.");
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "id"));
+
+        Page<TaskModel> pageTask = this.taskRepository.findByTaskAbbreviationAndCreatedDate(taskAbbreviation,
+                date.getYear(), date.getMonthValue(), date.getDayOfMonth(), pageable);
+
+        List<TaskModel> taskModels = pageTask.getContent();
+
+        return new PageResponse<>(
+                pageNumber,
+                PAGE_SIZE,
+                pageTask.getTotalPages(),
+                pageTask.getTotalElements(),
+                this.taskModelsToDtos(taskModels));
+    }
+
+    @Override
     public TaskDto closeTask(TaskDto givenTaskDto) {
         TaskModel foundTask = this.taskRepository.findById(givenTaskDto.getId()).orElseThrow(
                 () -> new ResourceNotFoundException("No task exist for id: " + givenTaskDto.getId()));
@@ -619,7 +640,6 @@ public class TaskServicesImpl implements TaskServices {
         List<TaskModel> pendingTasks = taskModels.stream()
                 .filter(t -> t.isClosed() == false).toList();
         monthlyStats.setPending((long) pendingTasks.size());
-
 
         List<TaskModel> completedTasks = taskModels.stream()
                 .filter(t -> t.isClosed() == true).toList();

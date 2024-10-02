@@ -2,6 +2,7 @@ package com.taskify.controllers;
 
 import com.taskify.constants.ActionType;
 import com.taskify.constants.ResourceType;
+import com.taskify.dtos.ColumnDto;
 import com.taskify.dtos.FileDto;
 import com.taskify.dtos.FunctionDto;
 import com.taskify.services.FunctionServices;
@@ -11,11 +12,19 @@ import com.taskify.utils.NotificationMessage;
 import com.taskify.utils.PageResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -54,6 +63,41 @@ public class FunctionController {
     public ResponseEntity<PageResponse<FunctionDto>> getAllFunctions(@RequestParam(name = "page") int pageNumber) {
         return new ResponseEntity<>(this.functionServices.getAllFunctions(pageNumber), HttpStatus.OK);
     }
+
+    @PostMapping(value = "/upload-files", consumes = { "multipart/form-data" })
+    public ResponseEntity<?> uploadFiles(
+            @RequestPart("function") FunctionDto functionDto,
+            @RequestPart(value = "files", required = false) MultipartFile[] files) {
+        return new ResponseEntity<>(
+                this.functionServices.uploadFiles(functionDto, files),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/get-files")
+    public ResponseEntity<byte[]> getFile(@RequestParam String filePath) {
+        File file = new File(filePath);
+        if (!file.exists() || !file.isFile()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try (FileInputStream inputStream = new FileInputStream(file)) {
+            byte[] fileContent = inputStream.readAllBytes();
+
+            HttpHeaders headers = new HttpHeaders();
+            String mimeType = Files.probeContentType(file.toPath()); // Automatically determine MIME type
+            if (mimeType == null) {
+                mimeType = "application/octet-stream"; // Default to binary if MIME type can't be determined
+            }
+            headers.setContentType(MediaType.parseMediaType(mimeType));
+            headers.setContentDisposition(ContentDisposition.builder("inline").filename(file.getName()).build());
+
+            return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getFunctionById(@PathVariable Long id) {

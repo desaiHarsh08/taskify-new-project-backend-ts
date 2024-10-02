@@ -7,6 +7,8 @@ import com.taskify.utils.PageResponse;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface FunctionServices {
 
     FunctionDto createFunction(FunctionDto functionDto);
@@ -37,5 +39,8 @@ public interface FunctionServices {
 
     boolean deleteFunction(Long id, Long userId);
 
+    public boolean uploadFiles(FunctionDto functionDto, MultipartFile[] files);
+
+    public byte[] readFileAsBytes(String filePath);
 
 }

@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -88,6 +89,15 @@ public class TaskController {
     public ResponseEntity<PageResponse<TaskDto>> getTasksByAssignedUser(@RequestParam(name = "page") int pageNumber,
             @RequestParam(name = "assignedTo") Long assignedByUserId) {
         return new ResponseEntity<>(this.taskServices.getTasksByAssignedUser(pageNumber, assignedByUserId),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/abbreviation-date")
+    public ResponseEntity<PageResponse<TaskDto>> getTasksByAbbreviationAndCreatedDate(
+            @RequestParam(name = "page") int pageNumber,
+            @RequestParam(name = "abbreviation") String taskAbbreviation, @RequestParam(name = "date") LocalDate date) {
+        return new ResponseEntity<>(
+                this.taskServices.getTaskByAbbreviationOrCreatedDate(pageNumber, taskAbbreviation, date),
                 HttpStatus.OK);
     }
 

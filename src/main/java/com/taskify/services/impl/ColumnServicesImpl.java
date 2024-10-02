@@ -2,7 +2,6 @@ package com.taskify.services.impl;
 
 import com.taskify.constants.ColumnType;
 import com.taskify.dtos.ColumnDto;
-import com.taskify.dtos.FileDto;
 import com.taskify.exceptions.ResourceNotFoundException;
 import com.taskify.models.*;
 import com.taskify.models.prototypes.ColumnPrototypeModel;
@@ -81,14 +80,11 @@ public class ColumnServicesImpl implements ColumnServices {
 
         if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.NUMBER.name())) {
             columnModel.setNumberValue(column.getNumberValue());
-        } 
-        else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.STRING.name())) {
+        } else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.STRING.name())) {
             columnModel.setTextValue(column.getTextValue());
-        } 
-        else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.BOOLEAN.name())) {
+        } else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.BOOLEAN.name())) {
             columnModel.setBooleanValue(column.getBooleanValue());
-        } 
-        else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.DATE.name())) {
+        } else if (foundColumnPrototypeModel.getColumnType().equals(ColumnType.DATE.name())) {
             columnModel.setDateValue(column.getDateValue());
         }
 
@@ -108,6 +104,17 @@ public class ColumnServicesImpl implements ColumnServices {
         ColumnModel columnModel = this.columnRepository.findById(columnDto.getId()).orElseThrow(
                 () -> new IllegalArgumentException("No column exist for id: " + columnDto.getId()));
 
+        FieldModel fieldModel = this.fieldRepository.findById(columnDto.getFieldId()).orElseThrow(
+                () -> new IllegalArgumentException("No field exist for id: " + columnDto.getFieldId()));
+
+        FunctionModel functionModel = this.functionRepository.findById(fieldModel.getFunction().getId()).orElseThrow(
+                () -> new IllegalArgumentException("No function exist for id: " + fieldModel.getFunction().getId()));
+
+        TaskModel taskModel = this.taskRepository.findById(functionModel.getTask().getId()).orElseThrow(
+                () -> new IllegalArgumentException("No function exist for id: " + functionModel.getTask().getId()));
+
+        LocalDateTime date = LocalDateTime.now();
+
         // Create the directory path
         String directoryPath = this.getFilePath(columnModel);
 
@@ -123,13 +130,27 @@ public class ColumnServicesImpl implements ColumnServices {
 
         System.out.println("created directory");
         for (MultipartFile file : files) {
+            // Create filename
+            String fileNamePrefix = taskModel.getTaskAbbreviation() + "_" +
+                    functionModel.getId() + "_" +
+                    columnModel.getId() + "_" +
+                    date.getYear() + "_" + date.getMonth() + 1 + "-" + date.getDayOfMonth() + "-" +
+                    (date.getHour() + 1) + "-" + (date.getMinute() + 1) + "-" + (date.getSecond() + 1);
+
+            // Extract the extension from the original file name
+            String originalFileName = file.getOriginalFilename();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
+            // Append the extension to the fileNamePrefix
+
+            String fileName = fileNamePrefix + extension;
+
             System.out.println("saving...");
-            this.saveFile(file, directoryPath);
+            this.saveFile(file, directoryPath, fileName);
         }
         return true;
     }
 
-    private void saveFile(MultipartFile file, String fileDirectory) {
+    private void saveFile(MultipartFile file, String fileDirectory, String fileName) {
         System.out.println(fileDirectory);
         // Define the directory path adjacent to the root directory
         try {
@@ -143,7 +164,7 @@ public class ColumnServicesImpl implements ColumnServices {
             System.out.println("directory exist, and now storing...");
 
             // Create the path for the file to be stored, using the provided fileName
-            Path filePath = directoryPath.resolve(file.getOriginalFilename());
+            Path filePath = directoryPath.resolve(fileName);
 
             System.out.println("Full file path: " + filePath.toAbsolutePath());
 
@@ -233,11 +254,6 @@ public class ColumnServicesImpl implements ColumnServices {
         System.out.println("column: " + givenColumn);
         ColumnModel foundColumn = this.columnRepository.findById(givenColumn.getId()).orElseThrow(
                 () -> new ResourceNotFoundException("No column exist for id: " + givenColumn.getId()));
-
-        ColumnPrototypeModel foundColumnPrototypeModel = this.columnPrototypeRepository
-                .findById(foundColumn.getColumnPrototype().getId()).orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "No column_prototype exist for id: " + foundColumn.getColumnPrototype().getId()));
 
         FieldModel foundField = this.fieldRepository.findById(givenColumn.getFieldId()).orElseThrow(
                 () -> new IllegalArgumentException("No field exist for id: " + givenColumn.getFieldId()));

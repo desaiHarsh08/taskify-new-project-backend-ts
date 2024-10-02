@@ -41,7 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Skip WebSocket requests
         if (request.getRequestURI().startsWith("/ws/notifications")) {
-            System.out.println("in ws req");
+            // System.out.println("in ws req: " + request.getRequestURL());
+        // System.out.println(request.getHeader("Authorization"));
             filterChain.doFilter(request, response);
             return;
         }
@@ -50,6 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Get the token from the request's header
         String bearerToken = request.getHeader("Authorization"); // "Bearer <token>"
+
+        // System.out.println("bearerToken: " + bearerToken);
 
         // Check if the token is correct
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
@@ -81,9 +84,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                System.out.println("Token validated, setting authentication context");
+                // System.out.println("Token validated, setting authentication context");
             } else {
-                System.err.println("Invalid token");
+                // System.out.println(email + " " + bearerToken);
+                // System.err.println("Invalid token");
                 throw new SecurityException("Authentication failed... Please try to login again!");
             }
         }

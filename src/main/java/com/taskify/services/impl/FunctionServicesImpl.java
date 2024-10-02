@@ -3,18 +3,23 @@ package com.taskify.services.impl;
 import com.taskify.constants.ActionType;
 import com.taskify.constants.Department;
 import com.taskify.constants.ResourceType;
+import com.taskify.dtos.ColumnDto;
 import com.taskify.dtos.FieldDto;
 import com.taskify.dtos.FileDto;
 import com.taskify.dtos.FunctionDto;
 import com.taskify.exceptions.ResourceNotFoundException;
 import com.taskify.externals.email.EmailServices;
+import com.taskify.models.ColumnModel;
+import com.taskify.models.FieldModel;
 import com.taskify.models.FunctionModel;
 import com.taskify.models.TaskModel;
 import com.taskify.models.TaskifyTimelineModel;
 import com.taskify.models.UserModel;
 import com.taskify.models.prototypes.FunctionPrototypeModel;
+import com.taskify.models.prototypes.TaskPrototypeModel;
 import com.taskify.repositories.*;
 import com.taskify.repositories.prototypes.FunctionPrototypeRepository;
+import com.taskify.repositories.prototypes.TaskPrototypeRepository;
 import com.taskify.services.FieldServices;
 import com.taskify.services.FunctionServices;
 import com.taskify.utils.PageResponse;
@@ -25,11 +30,22 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FunctionServicesImpl implements FunctionServices {
@@ -53,6 +69,9 @@ public class FunctionServicesImpl implements FunctionServices {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TaskPrototypeRepository taskPrototypeRepository;
 
     @Autowired
     private TaskifyTimelineRepository taskifyTimelineRepository;
@@ -127,6 +146,118 @@ public class FunctionServicesImpl implements FunctionServices {
         String body = this.generateEmailBody(functionModel);
         this.emailServices.sendSimpleMessage(foundTask.getAssignedToUser().getEmail(), subject, body);
         return this.functionModelToDto(functionModel);
+    }
+
+    private String getFilePath(FunctionModel functionModel) {
+        TaskModel foundTaskModel = this.taskRepository.findById(functionModel.getTask().getId()).orElseThrow(
+                () -> new IllegalArgumentException("No task exist for id: " + functionModel.getTask().getId()));
+
+        TaskPrototypeModel foundTaskPrototypeModel = this.taskPrototypeRepository
+                .findById(foundTaskModel.getTaskPrototype().getId()).orElseThrow(
+                        () -> new IllegalArgumentException(
+                                "No task_prototype exist for id: " + functionModel.getTask().getId()));
+
+        // Create the directory path
+        String directoryPath = "../data/" + foundTaskPrototypeModel.getTaskType() + "/" +
+                "TASK-" + foundTaskModel.getId() + "/" +
+                "FUNCTION-" + functionModel.getId() + "/";
+
+        return directoryPath;
+    }
+
+    @Override
+    public boolean uploadFiles(FunctionDto functionDto, MultipartFile[] files) {
+        FunctionModel functionModel = this.functionRepository.findById(functionDto.getId()).orElseThrow(
+                () -> new IllegalArgumentException("No function exist for id: " + functionDto.getId()));
+
+        TaskModel taskModel = this.taskRepository.findById(functionModel.getTask().getId()).orElseThrow(
+                () -> new IllegalArgumentException("No function exist for id: " + functionModel.getTask().getId()));
+
+        LocalDateTime date = LocalDateTime.now();
+
+        // Create the directory path
+        String directoryPath = this.getFilePath(functionModel);
+
+        // Create the directory if it does not exist
+        File directory = new File(directoryPath);
+        System.out.println("Attempting for Creating directory: -");
+        if (!directory.exists()) {
+
+            if (!directory.mkdirs()) {
+                throw new RuntimeException("Failed to create directory: " + directoryPath);
+            }
+        }
+
+        System.out.println("created directory");
+        for (MultipartFile file : files) {
+            // Create filename
+            String fileNamePrefix = taskModel.getTaskAbbreviation() + "_" +
+                    functionModel.getId() + "_" +
+                    date.getYear() + "_" + date.getMonth().getValue() + "-" + date.getDayOfMonth() + "-" +
+                    (date.getHour() + 1) + "-" + (date.getMinute() + 1) + "-" + (date.getSecond() + 1);
+
+            // Extract the extension from the original file name
+            String originalFileName = file.getOriginalFilename();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
+            // Append the extension to the fileNamePrefix
+
+            String fileName = fileNamePrefix + extension;
+
+            System.out.println("saving...");
+            this.saveFile(file, directoryPath, fileName);
+        }
+        return true;
+    }
+
+    private void saveFile(MultipartFile file, String fileDirectory, String fileName) {
+        System.out.println(fileDirectory);
+        // Define the directory path adjacent to the root directory
+        try {
+            Path directoryPath = Paths.get(fileDirectory);
+
+            // Ensure the directory exists
+            if (!Files.exists(directoryPath)) {
+                Files.createDirectories(directoryPath);
+            }
+
+            System.out.println("directory exist, and now storing...");
+
+            // Create the path for the file to be stored, using the provided fileName
+            Path filePath = directoryPath.resolve(fileName);
+
+            System.out.println("Full file path: " + filePath.toAbsolutePath());
+
+            // Save the file to the defined directory
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // throw new Exception("file not uploaded!");
+        }
+    }
+
+    @Override
+    public byte[] readFileAsBytes(String filePath) {
+        File file = new File(filePath);
+        if (!file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("File not found or is not a valid file: " + filePath);
+        }
+
+        try (FileInputStream inputStream = new FileInputStream(file)) {
+            return inputStream.readAllBytes();
+        } catch (IOException e) {
+            e.printStackTrace(); // Consider logging the error
+            return null;
+        }
+    }
+
+    public boolean deleteFile(String filePath) {
+        File file = new File(filePath);
+        if (file.exists()) {
+            return file.delete();
+        } else {
+            throw new ResourceNotFoundException("File not found: " + filePath);
+        }
     }
 
     public String generateEmailBody(FunctionModel functionModel) {
@@ -377,11 +508,6 @@ public class FunctionServicesImpl implements FunctionServices {
                 null);
         this.taskifyTimelineRepository.save(taskifyTimelineModel);
 
-        // TODO: Notify the user if function got closed and broadcast the message
-        if (givenFunctionDto.getIsClosed()) {
-
-        }
-
         return this.functionModelToDto(foundFunction);
     }
 
@@ -492,6 +618,25 @@ public class FunctionServicesImpl implements FunctionServices {
         }
 
         functionDto.setFields(this.fieldServices.getFieldsByFunctionId(functionModel.getId()));
+
+        // Create the directory path
+        String directoryPath = this.getFilePath(functionModel);
+
+        // Retrieve file names
+        File directory = new File(directoryPath);
+        File[] files = directory.listFiles();
+
+        if (files != null && files.length > 0) {
+            List<String> filePaths = Arrays.stream(files)
+                    .map(File::getAbsolutePath)
+                    .collect(Collectors.toList());
+
+            // Set file paths in DTO
+            functionDto.setFileDirectoryPath(filePaths);
+        } else {
+            // If no files, set an empty list
+            functionDto.setFileDirectoryPath(Collections.emptyList());
+        }
 
         return functionDto;
     }

@@ -52,24 +52,13 @@ public class SecurityConfig {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequest -> authorizeRequest
+                .requestMatchers("/ws/**", "/ws/notifications").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                        .requestMatchers("/ws/**", "/api/task-prototypes").permitAll()
                         .anyRequest().permitAll())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(this.jwtAuthenticationEntryPoint))
-                .sessionManagement(
-                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                
                 .addFilterBefore(this.jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-
-        // OAuth Configurations
-        httpSecurity.oauth2Login(oauth -> {
-            oauth
-                    .loginPage("http://localhost:5173/")
-                    .successHandler(oAuth2SuccessHandler)
-                    .failureHandler(oAuth2FailureHandler);
-            // .authorizationEndpoint(authorization ->
-            // authorization.baseUri("/oauth2/authorization")) ;
-        });
 
         return httpSecurity.build();
     }

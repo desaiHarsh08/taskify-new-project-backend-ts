@@ -44,9 +44,21 @@ public interface TaskRepository extends JpaRepository<TaskModel, Long> {
     List<TaskModel> findTasksByYearAndMonth(@Param("year") int year, @Param("month") int month);
 
     @Query("SELECT t FROM TaskModel t " +
-           "JOIN FunctionModel f ON t.id = f.task.id " +
-           "WHERE f.dueDate < CURRENT_TIMESTAMP " +
-           "AND f.isClosed = false")
+            "JOIN FunctionModel f ON t.id = f.task.id " +
+            "WHERE f.dueDate < CURRENT_TIMESTAMP " +
+            "AND f.isClosed = false")
     Page<TaskModel> findTasksWithDueFunctionModelsBeforeNowAndNotClosed(Pageable pageable);
 
+    @Query("SELECT t FROM TaskModel t " +
+            "WHERE (:taskAbbreviation IS NULL OR :taskAbbreviation = '' OR LOWER(TRIM(t.taskAbbreviation)) = LOWER(TRIM(:taskAbbreviation))) "
+            +
+            "AND EXTRACT(YEAR FROM t.createdDate) = :year " +
+            "AND EXTRACT(MONTH FROM t.createdDate) = :month " +
+            "AND EXTRACT(DAY FROM t.createdDate) = :day")
+    Page<TaskModel> findByTaskAbbreviationAndCreatedDate(
+            @Param("taskAbbreviation") String taskAbbreviation,
+            @Param("year") int year,
+            @Param("month") int month,
+            @Param("day") int day,
+            Pageable pageable);
 }

@@ -48,4 +48,6 @@ public class FunctionModel {
 
     private boolean isClosed;
 
+    private String remarks;
+
 }

@@ -61,29 +61,7 @@ public class ColumnController {
                 HttpStatus.OK);
     }
 
-    // @GetMapping("/get-files")
-    // public ResponseEntity<?> getFiles(@RequestParam String filePath) {
-    // return new ResponseEntity<>(
-    // this.columnServices.readFileAsBytes(filePath),
-    // HttpStatus.OK);
-    // }
-
     @GetMapping("/get-files")
-    // public ResponseEntity<byte[]> getFile(@RequestParam String filePath) {
-    //     byte[] fileContent = this.columnServices.readFileAsBytes(filePath);
-
-    //     if (fileContent == null) {
-    //         // Return a 404 response if the file is not found
-    //         return ResponseEntity.notFound().build();
-    //     }
-
-    //     HttpHeaders headers = new HttpHeaders();
-    //     headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    //     headers.setContentDisposition(
-    //             ContentDisposition.builder("inline").filename(new File(filePath).getName()).build());
-
-    //     return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
-    // }
     public ResponseEntity<byte[]> getFile(@RequestParam String filePath) {
         File file = new File(filePath);
         if (!file.exists() || !file.isFile()) {
